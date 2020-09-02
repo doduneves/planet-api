@@ -1,4 +1,4 @@
-package planetcontroller
+package controllers
 
 import (
 	"encoding/json"
@@ -20,20 +20,43 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+func GetPlanetAppearancesByName(name string) int {
+	var mapAppearances map[string]int
+	mapAppearances = GetPlanetsAppearances()
+
+	for key, appNum := range mapAppearances {
+		if key == name {
+			return appNum
+		}
+	}
+
+	return 0
+
+}
+
 func GetAll(w http.ResponseWriter, r *http.Request) {
+	var planetsResponse []Planet
+
 	var planet Planet
 	planets, err := planet.GetAll()
+	for _, p := range planets {
+		p.SetAppearance(GetPlanetAppearancesByName(p.Nome))
+		planetsResponse = append(planetsResponse, p)
+	}
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondWithJson(w, http.StatusOK, planets)
+
+	respondWithJson(w, http.StatusOK, planetsResponse)
 }
 
 func GetByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var planet Planet
 	planet, err := planet.GetByID(params["id"])
+	planet.SetAppearance(GetPlanetAppearancesByName(planet.Nome))
+
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid Planet ID")
 		return
@@ -55,24 +78,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	planet.SetAppearance(GetPlanetAppearancesByName(planet.Nome))
 	respondWithJson(w, http.StatusCreated, planet)
-}
-
-func Update(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	params := mux.Vars(r)
-	var planet Planet
-
-	if err := json.NewDecoder(r.Body).Decode(&planet); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-
-	if err := planet.Update(params["id"]); err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	respondWithJson(w, http.StatusOK, map[string]string{"result": planet.Nome + " atualizado com sucesso!"})
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {

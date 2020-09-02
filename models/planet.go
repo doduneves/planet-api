@@ -1,4 +1,4 @@
-package planet
+package models
 
 import (
 	. "github.com/doduneves/planet-api/config"
@@ -7,10 +7,11 @@ import (
 )
 
 type Planet struct {
-	ID      bson.ObjectId `bson:"_id" json:"id"`
-	Nome    string        `bson:"nome" json:"nome"`
-	Clima   string        `bson:"clima" json:"clima"`
-	Terreno string        `bson:"terreno" json:"terreno"`
+	ID        bson.ObjectId `bson:"_id" json:"id"`
+	Nome      string        `bson:"nome" json:"nome"`
+	Clima     string        `bson:"clima" json:"clima"`
+	Terreno   string        `bson:"terreno" json:"terreno"`
+	Aparicoes int           `bson:"aparicoes" json:"aparicoes"`
 }
 
 var db *mgo.Database
@@ -19,6 +20,10 @@ var config = Config{}
 const (
 	COLLECTION = "planets"
 )
+
+func (p *Planet) SetAppearance(aparicoes int) {
+	p.Aparicoes = aparicoes
+}
 
 func (p Planet) GetAll() ([]Planet, error) {
 	db = config.Connect()

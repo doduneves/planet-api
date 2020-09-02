@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	. "github.com/doduneves/planet-api/config"
-	planetcontroller "github.com/doduneves/planet-api/controllers"
+	controllers "github.com/doduneves/planet-api/controllers"
 	"github.com/gorilla/mux"
 )
 
@@ -17,12 +17,14 @@ func init() {
 }
 
 func main() {
+
+	fmt.Println(controllers.GetPlanetsAppearances())
+
 	r := mux.NewRouter()
-	r.HandleFunc("/planets", planetcontroller.GetAll).Methods("GET")
-	r.HandleFunc("/planets/{id}", planetcontroller.GetByID).Methods("GET")
-	r.HandleFunc("/planets", planetcontroller.Create).Methods("POST")
-	r.HandleFunc("/planets/{id}", planetcontroller.Update).Methods("PUT")
-	r.HandleFunc("/planets/{id}", planetcontroller.Delete).Methods("DELETE")
+	r.HandleFunc("/planets", controllers.GetAll).Methods("GET")
+	r.HandleFunc("/planets/{id}", controllers.GetByID).Methods("GET")
+	r.HandleFunc("/planets", controllers.Create).Methods("POST")
+	r.HandleFunc("/planets/{id}", controllers.Delete).Methods("DELETE")
 
 	var port = ":8001"
 	fmt.Println("Server running in port:", port)
