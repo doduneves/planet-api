@@ -15,6 +15,7 @@ type Config struct {
 }
 
 func (c *Config) Connect() *mgo.Database {
+	c.Read()
 	session, err := mgo.Dial(c.Server)
 	if err != nil {
 		log.Fatal(err)

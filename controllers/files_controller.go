@@ -50,7 +50,6 @@ func GetPlanetsAppearances() map[string]int {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(lastUpdateText)
 
 	fileName := "files/planet_appearances.json"
 

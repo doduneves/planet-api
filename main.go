@@ -17,8 +17,7 @@ func init() {
 }
 
 func main() {
-
-	fmt.Println(controllers.GetPlanetsAppearances())
+	config.Connect()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/planets", controllers.GetAll).Methods("GET")
