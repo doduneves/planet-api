@@ -35,10 +35,17 @@ func GetPlanetAppearancesByName(name string) int {
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
+
+	paramNome := ""
+	if r.URL.Query()["nome"] != nil {
+		paramNome = r.URL.Query()["nome"][0]
+	}
+
 	var planetsResponse []Planet
 
 	var planet Planet
-	planets, err := planet.GetAll()
+	planets, err := planet.GetAll(paramNome)
+
 	for _, p := range planets {
 		p.SetAppearance(GetPlanetAppearancesByName(p.Nome))
 		planetsResponse = append(planetsResponse, p)
