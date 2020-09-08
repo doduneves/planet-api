@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	. "github.com/doduneves/planet-api/models"
 	"github.com/gorilla/mux"
@@ -36,26 +37,61 @@ func GetPlanetAppearancesByName(name string) int {
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
 
+	// Inicialmente faço um tratamento da URL para gerar os links das próximas páginas
+	urlRequest := r.Host + r.URL.EscapedPath()
+
+	var planetResponse PlanetResponse
+
+	pageStr := "1"
+	if r.URL.Query()["page"] != nil {
+		pageStr = r.URL.Query()["page"][0]
+	}
+
+	page, erroConv := strconv.Atoi(pageStr)
+	if erroConv != nil {
+		respondWithError(w, http.StatusInternalServerError, erroConv.Error())
+		return
+	}
+
+	if page > 1 {
+		planetResponse.Links.PreviousPage = urlRequest + "?page=" + strconv.Itoa(page-1)
+	}
+
+	planetResponse.Links.NextPage = urlRequest + "?page=" + strconv.Itoa(page+1)
+	planetResponse.Links.Actual = urlRequest + "?page=" + strconv.Itoa(page)
+
 	paramNome := ""
 	if r.URL.Query()["nome"] != nil {
 		paramNome = r.URL.Query()["nome"][0]
+		planetResponse.Links.Actual += "&name=" + paramNome
+		if planetResponse.Links.NextPage != "" {
+			planetResponse.Links.NextPage += "&name=" + paramNome
+		}
+		if planetResponse.Links.PreviousPage != "" {
+			planetResponse.Links.PreviousPage += "&name=" + paramNome
+		}
 	}
 
-	var planetsResponse []Planet
+	var planetsList []Planet
 
 	var planet Planet
-	planets, err := planet.GetAll(paramNome)
+	planets, err := planet.GetAll(paramNome, page)
 
 	for _, p := range planets {
 		p.SetAppearance(GetPlanetAppearancesByName(p.Nome))
-		planetsResponse = append(planetsResponse, p)
+		planetsList = append(planetsList, p)
 	}
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	planetResponse.Planets = planetsList
+	planetResponse.Count = len(planetsList)
+	if planetResponse.Count < 10 {
+		planetResponse.Links.NextPage = ""
+	}
 
-	respondWithJson(w, http.StatusOK, planetsResponse)
+	respondWithJson(w, http.StatusOK, planetResponse)
 }
 
 func GetByID(w http.ResponseWriter, r *http.Request) {

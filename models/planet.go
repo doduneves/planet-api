@@ -29,16 +29,18 @@ func (p *Planet) SetAppearance(aparicoes int) {
 	p.Aparicoes = aparicoes
 }
 
-func (p Planet) GetAll(nome string) ([]Planet, error) {
+func (p Planet) GetAll(nome string, page int) ([]Planet, error) {
 	db = config.Connect()
 	var planets []Planet
 	var err error
 
+	skip := (page - 1) * 10
+
 	if nome != "" {
-		err = db.C(COLLECTION).Find(bson.M{"nome": nome}).All(&planets)
+		err = db.C(COLLECTION).Find(bson.M{"nome": nome}).Skip(skip).Limit(10).All(&planets)
 
 	} else {
-		err = db.C(COLLECTION).Find(bson.M{}).All(&planets)
+		err = db.C(COLLECTION).Find(bson.M{}).Skip(skip).Limit(10).All(&planets)
 	}
 	return planets, err
 }
